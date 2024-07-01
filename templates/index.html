@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <script src="{{ url_for('static', filename='socket.io.js') }}"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+    <nav>
+        <a href="{{ url_for('change_phone_number') }}">Phone number</a>
+        <a href="{{ url_for('logout') }}">Logout</a>
+
+    </nav>
+
+
+
+    <div class="con">
+        <div id="sensor-data">
+        </div>
+        <div id="room-list">
+        </div>
+    </div>
+
+
+
+    <script>
+        var socket = io.connect('http://' + document.domain + ':' + location.port);
+
+        // Sayfa yüklendiğinde verileri al
+        window.onload = function () {
+            socket.emit('get_room_data');
+            socket.emit('get_sensor_data');
+        };
+
+        socket.on('connect', function () {
+            console.log('Connected to server');
+        });
+
+        socket.on('room_update', function (data) {
+            var roomList = document.getElementById('room-list');
+            roomList.innerHTML = ''; // Her güncellemede listeyi temizle
+            for (var key in data) {
+                if (data.hasOwnProperty(key)) {
+                    var listItem = document.createElement('div');
+                    listItem.innerHTML = key + ': ' + data[key];
+                    roomList.appendChild(listItem);
+                }
+            }
+        });
+
+        socket.on('sensor_update', function (data) {
+            var sensorData = document.getElementById('sensor-data');
+            sensorData.innerHTML = ''; // Her güncellemede veriyi temizle
+            var listItem = document.createElement('div');
+            listItem.innerHTML = 'Temperature: ' + data.temperature + ', Humidity: ' + data.humidity;
+            sensorData.appendChild(listItem);
+        });
+    </script>
+</body>
+
+</html>
